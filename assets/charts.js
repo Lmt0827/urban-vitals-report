@@ -9,50 +9,35 @@
 
   var palette = [accent, accent2, '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4'];
 
-  // --- Chart: Keywords Word Cloud ---
+  // --- Chart: Keywords Bar Chart (replacing word cloud for reliability) ---
   var chartKeywords = echarts.init(document.getElementById('chart-keywords'), null, { renderer: 'svg' });
   chartKeywords.setOption({
     animation: false,
-    tooltip: { show: true, appendToBody: true },
+    tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, appendToBody: true },
+    grid: { left: '3%', right: '8%', bottom: '3%', top: '5%', containLabel: true },
+    xAxis: { type: 'value', axisLabel: { color: muted }, splitLine: { lineStyle: { color: rule, type: 'dashed' } } },
+    yAxis: { type: 'category', data: ['鸿蒙智城','闭环处置','风险预警','数据治理','物联感知','数字体征','城市大脑','AIoT','全域数字化','生命线监测','数据利用','城市体检','数字孪生','一网统管'], axisLabel: { color: ink, fontWeight: 'bold' }, axisLine: { lineStyle: { color: rule } } },
     series: [{
-      type: 'wordCloud',
-      shape: 'circle',
-      left: 'center',
-      top: 'center',
-      width: '90%',
-      height: '90%',
-      right: null,
-      bottom: null,
-      sizeRange: [16, 60],
-      rotationRange: [-45, 45],
-      rotationStep: 15,
-      gridSize: 12,
-      drawOutOfBound: false,
-      textStyle: { fontFamily: 'NotoSans, sans-serif', fontWeight: 'bold' },
-      emphasis: { textStyle: { shadowBlur: 10, shadowColor: '#333' } },
+      type: 'bar',
       data: [
-        { name: '一网统管', value: 120 },
-        { name: '数字孪生', value: 110 },
-        { name: '城市体检', value: 105 },
-        { name: '体征指标', value: 100 },
-        { name: '数据利用', value: 95 },
-        { name: '生命线监测', value: 90 },
-        { name: '全域数字化', value: 88 },
-        { name: 'AIoT', value: 85 },
-        { name: '闭环处置', value: 80 },
-        { name: '鸿蒙智城', value: 75 },
-        { name: '智慧传感器', value: 72 },
-        { name: '城市大脑', value: 70 },
-        { name: '数据治理', value: 68 },
-        { name: '预警阈值', value: 65 },
-        { name: '物联感知', value: 62 },
-        { name: '数字体征', value: 60 },
-        { name: '三网融合', value: 58 },
-        { name: '边缘计算', value: 55 },
-        { name: '智能决策', value: 52 },
-        { name: '风险预警', value: 50 }
+        { value: 45, itemStyle: { color: '#ec4899' } },
+        { value: 52, itemStyle: { color: '#f59e0b' } },
+        { value: 58, itemStyle: { color: '#ef4444' } },
+        { value: 62, itemStyle: { color: '#8b5cf6' } },
+        { value: 68, itemStyle: { color: '#06b6d4' } },
+        { value: 72, itemStyle: { color: '#0ea5e9' } },
+        { value: 75, itemStyle: { color: '#10b981' } },
+        { value: 80, itemStyle: { color: '#f97316' } },
+        { value: 85, itemStyle: { color: '#6366f1' } },
+        { value: 88, itemStyle: { color: '#84cc16' } },
+        { value: 92, itemStyle: { color: accent2 } },
+        { value: 95, itemStyle: { color: accent } },
+        { value: 105, itemStyle: { color: '#2563eb' } },
+        { value: 110, itemStyle: { color: '#1d4ed8' } }
       ],
-      color: palette
+      barWidth: '65%',
+      label: { show: true, position: 'right', color: ink, fontWeight: 'bold' },
+      itemStyle: { borderRadius: [0, 4, 4, 0] }
     }]
   });
   window.addEventListener('resize', function() { chartKeywords.resize(); });
@@ -146,5 +131,23 @@
     }]
   });
   window.addEventListener('resize', function() { chartWordfreq.resize(); });
+
+  // Fix for charts in hidden pages: trigger resize when visualization tab is shown
+  var origShowPage = window.showPage;
+  window.showPage = function(pageId) {
+    document.querySelectorAll('.page').forEach(function(p) { p.classList.remove('active'); });
+    document.querySelectorAll('.nav-tabs button').forEach(function(b) { b.classList.remove('active'); });
+    document.getElementById(pageId).classList.add('active');
+    if (event && event.target) event.target.classList.add('active');
+    if(pageId === 'visualization') {
+      setTimeout(function() {
+        chartKeywords.resize();
+        chartPolicyTypes.resize();
+        chartHotspots.resize();
+        chartTrends.resize();
+        chartWordfreq.resize();
+      }, 150);
+    }
+  };
 
 })();
