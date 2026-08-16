@@ -10,7 +10,7 @@
   var palette = [accent, accent2, '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4'];
 
   // --- Chart: Keywords Bar Chart (replacing word cloud for reliability) ---
-  var chartKeywords = echarts.init(document.getElementById('chart-keywords'), null, { renderer: 'svg' });
+  var chartKeywords = echarts.init(document.getElementById('chart-keywords'), null, { renderer: 'canvas' });
   chartKeywords.setOption({
     animation: false,
     tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, appendToBody: true },
@@ -43,7 +43,7 @@
   window.addEventListener('resize', function() { chartKeywords.resize(); });
 
   // --- Chart: Policy Types Pie ---
-  var chartPolicyTypes = echarts.init(document.getElementById('chart-policy-types'), null, { renderer: 'svg' });
+  var chartPolicyTypes = echarts.init(document.getElementById('chart-policy-types'), null, { renderer: 'canvas' });
   chartPolicyTypes.setOption({
     animation: false,
     tooltip: { trigger: 'item', appendToBody: true, formatter: '{b}: {c} ({d}%)' },
@@ -67,7 +67,7 @@
   window.addEventListener('resize', function() { chartPolicyTypes.resize(); });
 
   // --- Chart: Hotspots Comparison Bar ---
-  var chartHotspots = echarts.init(document.getElementById('chart-hotspots'), null, { renderer: 'svg' });
+  var chartHotspots = echarts.init(document.getElementById('chart-hotspots'), null, { renderer: 'canvas' });
   chartHotspots.setOption({
     animation: false,
     tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, appendToBody: true },
@@ -83,7 +83,7 @@
   window.addEventListener('resize', function() { chartHotspots.resize(); });
 
   // --- Chart: Trends Line ---
-  var chartTrends = echarts.init(document.getElementById('chart-trends'), null, { renderer: 'svg' });
+  var chartTrends = echarts.init(document.getElementById('chart-trends'), null, { renderer: 'canvas' });
   chartTrends.setOption({
     animation: false,
     tooltip: { trigger: 'axis', appendToBody: true },
@@ -102,7 +102,7 @@
   window.addEventListener('resize', function() { chartTrends.resize(); });
 
   // --- Chart: Word Frequency Bar ---
-  var chartWordfreq = echarts.init(document.getElementById('chart-wordfreq'), null, { renderer: 'svg' });
+  var chartWordfreq = echarts.init(document.getElementById('chart-wordfreq'), null, { renderer: 'canvas' });
   chartWordfreq.setOption({
     animation: false,
     tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, appendToBody: true, formatter: '{b}: {c}次' },
