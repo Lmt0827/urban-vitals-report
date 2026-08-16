@@ -132,22 +132,4 @@
   });
   window.addEventListener('resize', function() { chartWordfreq.resize(); });
 
-  // Fix for charts in hidden pages: trigger resize when visualization tab is shown
-  var origShowPage = window.showPage;
-  window.showPage = function(pageId) {
-    document.querySelectorAll('.page').forEach(function(p) { p.classList.remove('active'); });
-    document.querySelectorAll('.nav-tabs button').forEach(function(b) { b.classList.remove('active'); });
-    document.getElementById(pageId).classList.add('active');
-    if (event && event.target) event.target.classList.add('active');
-    if(pageId === 'visualization') {
-      setTimeout(function() {
-        chartKeywords.resize();
-        chartPolicyTypes.resize();
-        chartHotspots.resize();
-        chartTrends.resize();
-        chartWordfreq.resize();
-      }, 150);
-    }
-  };
-
 })();
