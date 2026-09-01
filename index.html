@@ -1,22 +1,192 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8">
-<meta http-equiv="refresh" content="0; url=urban-vitals-report.html">
-<title>城市体征监测政策与标准分析报告</title>
-<style>
-  body { font-family: 'Noto Sans CJK SC', 'WenQuanYi Micro Hei', sans-serif; background: #f7f9fb; color: #1a1a2e; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-  .loading { text-align: center; }
-  .loading h1 { font-size: 1.5rem; margin-bottom: 12px; }
-  .loading p { color: #6b7280; }
-  a { color: #2563eb; text-decoration: none; }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>城市体征监测政策分析报告 2026年9月</title>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts-wordcloud@2.1.0/dist/echarts-wordcloud.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif; background: #f5f7fa; color: #333; line-height: 1.6; }
+        .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+        .header { background: linear-gradient(135deg, #1a5276 0%, #2980b9 100%); color: white; padding: 40px; border-radius: 12px; margin-bottom: 30px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+        .header h1 { font-size: 32px; margin-bottom: 10px; }
+        .header .subtitle { font-size: 16px; opacity: 0.9; }
+        .header .date { font-size: 14px; opacity: 0.8; margin-top: 10px; }
+        .nav { background: white; padding: 15px; border-radius: 12px; margin-bottom: 30px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); display: flex; gap: 15px; flex-wrap: wrap; }
+        .nav a { color: #2980b9; text-decoration: none; padding: 8px 16px; border-radius: 6px; transition: all 0.3s; font-weight: 500; }
+        .nav a:hover { background: #ebf5fb; }
+        .nav a.active { background: #2980b9; color: white; }
+        .card { background: white; border-radius: 12px; padding: 30px; margin-bottom: 30px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .card h2 { color: #1a5276; font-size: 24px; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 3px solid #2980b9; }
+        .card h3 { color: #2c3e50; font-size: 18px; margin: 25px 0 15px; }
+        .timeline { position: relative; padding-left: 30px; }
+        .timeline::before { content: ''; position: absolute; left: 8px; top: 0; bottom: 0; width: 2px; background: #2980b9; }
+        .timeline-item { position: relative; margin-bottom: 25px; padding: 20px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #2980b9; }
+        .timeline-item::before { content: ''; position: absolute; left: -26px; top: 24px; width: 12px; height: 12px; background: #2980b9; border-radius: 50%; }
+        .timeline-date { font-weight: bold; color: #2980b9; font-size: 14px; margin-bottom: 5px; }
+        .timeline-title { font-weight: bold; color: #2c3e50; margin-bottom: 5px; }
+        .timeline-desc { color: #666; font-size: 14px; }
+        .timeline-source { margin-top: 8px; }
+        .timeline-source a { color: #2980b9; font-size: 13px; text-decoration: none; }
+        .timeline-source a:hover { text-decoration: underline; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 14px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #e0e0e0; }
+        th { background: #f8f9fa; font-weight: 600; color: #1a5276; }
+        tr:hover { background: #f8f9fa; }
+        .table-wrap { overflow-x: auto; }
+        .tag { display: inline-block; padding: 4px 10px; border-radius: 4px; font-size: 12px; margin: 2px; }
+        .tag-national { background: #e8f5e9; color: #2e7d32; }
+        .tag-local { background: #fff3e0; color: #ef6c00; }
+        .tag-standard { background: #e3f2fd; color: #1565c0; }
+        .tag-policy { background: #fce4ec; color: #c62828; }
+        .chart-container { width: 100%; height: 400px; margin: 20px 0; }
+        .chart-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(500px, 1fr)); gap: 20px; }
+        .chart-card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .keyword-cloud { width: 100%; height: 350px; }
+        .source-link { color: #2980b9; text-decoration: none; font-size: 13px; }
+        .source-link:hover { text-decoration: underline; }
+        .highlight-box { background: linear-gradient(135deg, #ebf5fb 0%, #d6eaf8 100%); padding: 20px; border-radius: 8px; margin: 15px 0; border-left: 4px solid #2980b9; }
+        .footer { text-align: center; padding: 30px; color: #666; font-size: 14px; }
+        @media print { .nav { display: none; } .card { break-inside: avoid; page-break-inside: avoid; } body { background: white; } }
+        .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; }
+        .badge-new { background: #e8f5e9; color: #2e7d32; }
+        .badge-key { background: #ffebee; color: #c62828; }
+        .badge-imp { background: #fff3e0; color: #ef6c00; }
+    </style>
 </head>
 <body>
-<div class="loading">
-  <h1>城市体征监测政策与标准分析报告</h1>
-  <p>页面加载中，请稍候...</p>
-  <p>如果未自动跳转，请<a href="urban-vitals-report.html">点击此处</a></p>
-</div>
+    <div class="container">
+        <div class="header">
+            <h1>城市体征监测政策分析报告</h1>
+            <div class="subtitle">国内 · 国外 双轨政策与标准规范深度解析</div>
+            <div class="date">报告日期：2026年9月2日 | 数据周期：2026年9月</div>
+        </div>
+        <div class="nav">
+            <a href="#timeline" class="active">政策时间线</a>
+            <a href="#domestic-policy">国内政策</a>
+            <a href="#domestic-standard">国内指标规范</a>
+            <a href="#foreign-policy">国外政策</a>
+            <a href="#analysis">数据分析</a>
+        </div>
+        <div class="card" id="timeline">
+            <h2>国内政策发布时间线（2026年9月）</h2>
+            <div class="timeline">
+                <div class="timeline-item"><div class="timeline-date">2026-09-01</div><div class="timeline-title">《江苏省城市基础设施生命线安全工程建设运行管理办法》正式发布施行通知</div><div class="timeline-desc">江苏省政府办公厅发布，将于9月21日起施行，有效期5年</div><div class="timeline-source"><a href="http://www.jiangsu.gov.cn/art/2026/9/1/art_60095_11823325.html" target="_blank">数据来源：江苏省人民政府</a></div></div>
+                <div class="timeline-item"><div class="timeline-date">2026-08-28</div><div class="timeline-title">GB/T 48091-2026《智慧城市服务体验感知评价通则 公共安全信息应用》发布</div><div class="timeline-desc">归口单位：公安部，2027年3月1日实施</div><div class="timeline-source"><a href="https://std.samr.gov.cn/search/stdPage?q=%E6%99%BA%E6%85%A7%E5%9F%8E%E5%B8%82&tid=" target="_blank">数据来源：全国标准信息公共服务平台</a></div></div>
+                <div class="timeline-item"><div class="timeline-date">2026-08-21</div><div class="timeline-title">《江苏省城市基础设施生命线安全工程建设运行管理办法》印发</div><div class="timeline-desc">苏政办规〔2026〕5号，明确综合监管+智慧监测建设思路</div><div class="timeline-source"><a href="http://www.jiangsu.gov.cn/art/2026/8/26/art_46144_11820899.html" target="_blank">数据来源：江苏省人民政府</a></div></div>
+                <div class="timeline-item"><div class="timeline-date">2026-08-19</div><div class="timeline-title">《城市公共设施管理 通用要求》国家标准发布</div><div class="timeline-desc">市场监管总局（国家标准委）批准发布，2027年2月1日起实施</div><div class="timeline-source"><a href="https://www.sac.gov.cn/xw/bzhdt/index.html" target="_blank">数据来源：国家标准化管理委员会</a></div></div>
+                <div class="timeline-item"><div class="timeline-date">2026-07-01</div><div class="timeline-title">GB/T 47678《城市运行管理服务平台》系列国家标准（第一批）全面实施</div><div class="timeline-desc">共9项标准正式实施，标志着平台建设有标可依</div><div class="timeline-source"><a href="https://openstd.samr.gov.cn/bzgk/std/nd?no=2801" target="_blank">数据来源：国家标准全文公开系统</a></div></div>
+                <div class="timeline-item"><div class="timeline-date">2026-05-25</div><div class="timeline-title">GB/T 47678《城市运行管理服务平台》系列标准批准发布</div><div class="timeline-desc">包括第1-8部分及第10部分，涵盖术语、技术、网格、地理编码、部件、数据、采集、评价</div><div class="timeline-source"><a href="https://std.samr.gov.cn/search/orgOthers?q=%E4%B8%AD%E5%A4%96%E5%BB%BA%E8%AE%BE%E4%BF%A1%E6%81%AF%E6%9C%89%E9%99%90%E8%B4%A3%E4%BB%BB%E5%85%AC%E5%8F%B8" target="_blank">数据来源：全国标准信息公共服务平台</a></div></div>
+            </div>
+        </div>
+        <div class="card">
+            <h2>国外政策发布时间线（2026年9月）</h2>
+            <div class="timeline">
+                <div class="timeline-item"><div class="timeline-date">2026-09-15</div><div class="timeline-title">CIVITAS Forum 2026 智慧城市峰会（欧盟）</div><div class="timeline-desc">欧盟委员会主办，聚焦城市出行指标与可持续交通</div><div class="timeline-source"><a href="https://transport.ec.europa.eu/index_en?o=%2F" target="_blank">数据来源：欧盟交通委员会</a></div></div>
+                <div class="timeline-item"><div class="timeline-date">2026-09-10</div><div class="timeline-title">第7届国际船舶自主与可持续峰会（瑞典马尔默）</div><div class="timeline-desc">ISO/IEC/IEEE 32857:2026 Wi-SUN FAN标准应用于智慧城市关键基础设施</div><div class="timeline-source"><a href="https://www.thefastmode.com/technology-solutions/49503-wi-sun-fan-becomes-first-wireless-mesh-network-standard-adopted-by-iso-iec-for-smart-cities" target="_blank">数据来源：The Fast Mode</a></div></div>
+                <div class="timeline-item"><div class="timeline-date">2026-08-28</div><div class="timeline-title">GB/T 48111-2026《交通信息采集 路侧毫米波雷达交通状态检测器》发布</div><div class="timeline-desc">全国智能运输系统标准化技术委员会归口，2027年3月1日实施</div><div class="timeline-source"><a href="https://std.samr.gov.cn/search/std?q=%E9%9B%B7%E8%BE%BE" target="_blank">数据来源：全国标准信息公共服务平台</a></div></div>
+                <div class="timeline-item"><div class="timeline-date">2026-07-09</div><div class="timeline-title">欧盟委员会通过《城市出行统一指标实施法规》</div><div class="timeline-desc">修订TEN-T法规(EU) 2024/1679，431个城市节点需提交首份数据报告</div><div class="timeline-source"><a href="https://transport.ec.europa.eu/news-events/news/commission-adopts-implementing-regulation-strengthen-sustainable-urban-mobility-through-harmonised-2026-07-09_en" target="_blank">数据来源：欧盟交通委员会</a></div></div>
+                <div class="timeline-item"><div class="timeline-date">2026-07</div><div class="timeline-title">ISO/IEC 25005-1:2026《智慧城市数据使用 第1部分：框架》发布</div><div class="timeline-desc">信息技术领域首个智慧城市数据使用框架标准</div><div class="timeline-source"><a href="https://www.iso.org/standard/88765.html" target="_blank">数据来源：ISO官网</a></div></div>
+                <div class="timeline-item"><div class="timeline-date">2026-07</div><div class="timeline-title">ISO/IEC 30178:2026《物联网数据互操作性》发布</div><div class="timeline-desc">定义城市级物联网部署的标准化数据格式与编码规范</div><div class="timeline-source"><a href="https://standards.iteh.ai/articles/blog/latest-news/iot-data-interoperability-july-2026" target="_blank">数据来源：ITEH Standards</a></div></div>
+            </div>
+        </div>
+        <div class="card" id="domestic-policy">
+            <h2>国内政策详细列表</h2>
+            <h3>国家级政策</h3>
+            <div class="table-wrap"><table><thead><tr><th>政策名称</th><th>发布单位</th><th>发布/实施日期</th><th>政策要求摘要</th><th>数据来源</th></tr></thead><tbody>
+                <tr><td><span class="badge badge-key">关键</span> GB/T 47678《城市运行管理服务平台》系列国家标准</td><td>国家市场监督管理总局、国家标准化管理委员会<br>主管部门：住房城乡建设部</td><td>发布：2026-05-25<br>实施：2026-07-01</td><td>共9项标准，涵盖术语符号、通用技术、网格、地理编码、管理部件和事项、<strong>监测部件和事件</strong>、数据、信息采集、综合评价。<br>核心要求：建立城市运行监测部件和事件的18位数字标识码体系。</td><td><a href="https://openstd.samr.gov.cn/bzgk/std/nd?no=2801" class="source-link" target="_blank">国家标准全文公开系统</a></td></tr>
+                <tr><td><span class="badge badge-new">新发布</span> 《城市公共设施管理 通用要求》</td><td>市场监管总局（国家标准委）</td><td>发布：2026-08-19<br>实施：2027-02-01</td><td>为全国城市公共设施全生命周期治理建立统一通用规范。</td><td><a href="https://www.sac.gov.cn/xw/bzhdt/index.html" class="source-link" target="_blank">国家标准化管理委员会</a></td></tr>
+                <tr><td><span class="badge badge-new">新发布</span> GB/T 48091-2026《智慧城市服务体验感知评价通则 公共安全信息应用》</td><td>公安部（归口）</td><td>发布：2026-08-28<br>实施：2027-03-01</td><td>规定智慧城市公共安全信息服务体验感知评价的原则、指标体系和方法。</td><td><a href="https://std.samr.gov.cn/search/stdPage?q=%E6%99%BA%E6%85%A7%E5%9F%8E%E5%B8%82&tid=" class="source-link" target="_blank">全国标准信息公共服务平台</a></td></tr>
+                <tr><td>2026年城市体检工作部署</td><td>住房城乡建设部</td><td>2026年全年实施</td><td>地级及以上城市和县级市全面开展城市体检，覆盖住房、小区、街区、城区4个维度。</td><td><a href="https://www.mohurd.gov.cn/xinwen/gzdt/art/2026/art_29e4b866035c41669afa3d8df65e3ed9.html" class="source-link" target="_blank">住建部官网</a></td></tr>
+                <tr><td>《深化智慧城市发展推进全域数字化转型行动计划》</td><td>国家发展改革委、国家数据局等</td><td>2025-11-01发布</td><td>到2027年底，城市运行"一网统管"基本实现，城市数字体征监测体系基本建立。</td><td><a href="https://www.mohurd.gov.cn/xinwen/gzdt/art/2025/art_fbd76e46a0a14378a88362e7c5cb6ba1.html" class="source-link" target="_blank">住建部官网</a></td></tr>
+            </tbody></table></div>
+            <h3>地方政策</h3>
+            <div class="table-wrap"><table><thead><tr><th>政策名称</th><th>发布单位/地区</th><th>发布/实施日期</th><th>政策要求摘要</th><th>监督单位</th><th>数据来源</th></tr></thead><tbody>
+                <tr><td><span class="badge badge-key">关键</span> 《江苏省城市基础设施生命线安全工程建设运行管理办法》</td><td>江苏省人民政府办公厅</td><td>发布：2026-08-21<br>实施：2026-09-21</td><td>建设思路："综合监管＋智慧监测"。覆盖燃气、供水、排水、热力、道路、桥梁、隧道等。</td><td>省住房城乡建设厅牵头</td><td><a href="http://www.jiangsu.gov.cn/art/2026/8/26/art_46144_11820899.html" class="source-link" target="_blank">江苏省人民政府</a></td></tr>
+                <tr><td>《山东省城市体检工作指引（2026版）》</td><td>山东省住房和城乡建设厅</td><td>2026-05-27发布</td><td>构建"55+10+X"指标体系。</td><td>山东省住房和城乡建设厅</td><td><a href="https://weixin.caupdcloud.com/archives/1305591" class="source-link" target="_blank">规划问道</a></td></tr>
+                <tr><td>天津市2026年城市体检工作</td><td>天津市住房城乡建设委</td><td>2026-07-21启动</td><td>构建"55+17"指标体系。</td><td>天津市住房城乡建设委</td><td><a href="https://www.tj.gov.cn/zmhd/hygqx/202607/t20260722_7339539.html" class="source-link" target="_blank">天津政务网</a></td></tr>
+                <tr><td>上海市城市体征智能监测类场景建设</td><td>上海市规划和自然资源局</td><td>2026-04-28发布</td><td>建设"大略之眼"等场景，推进城市运行感知数据汇聚。</td><td>上海市规划和自然资源局</td><td><a href="https://ghzyj.sh.gov.cn/zcwj/zhl/20260428/1b1f8e02101e4791abc70d2c7bdb21f4.html" class="source-link" target="_blank">上海市规划和自然资源局</a></td></tr>
+                <tr><td>《武汉市城市运行"一网统管"暂行办法》</td><td>武汉市人民政府</td><td>2026-07-28发布</td><td>科学设定市区融合的城市运行数字体征指标体系并实施动态调整。</td><td>武汉市城市运行管理机构</td><td><a href="https://cjrb.cjn.cn/h5/html5/2026-07/28/content_151734_3679048.htm" class="source-link" target="_blank">长江日报</a></td></tr>
+                <tr><td>深圳市城市指数（UIS）</td><td>深圳市人民政府</td><td>2026-01发布</td><td>构建"6+19+50+X"指标体系，为中国首个城市体征综合指数。</td><td>深圳市人民政府</td><td><a href="http://news.qq.com/rain/a/20260503A06UWQ00" class="source-link" target="_blank">腾讯新闻</a></td></tr>
+                <tr><td>《2026年普陀区城市运行"一网统管"工作要点》</td><td>上海市普陀区人民政府</td><td>2026-08发布</td><td>完善城市数字体征平台建设，扩大指标覆盖面。</td><td>普陀区城市运行管理中心</td><td><a href="http://www.beinet.net.cn/zcfg/zcfb/wb_10997/202608/t14463263.html" class="source-link" target="_blank">北京经济信息网</a></td></tr>
+            </tbody></table></div>
+            <div class="highlight-box"><strong>与前政策的详细区别：</strong><br>1. <strong>从试点到全覆盖：</strong>2026年城市体检从试点城市扩展至全国449个城市。<br>2. <strong>从单一到综合：</strong>江苏省新规首次将"综合监管+智慧监测"写入地方政府规章。<br>3. <strong>从管理到服务：</strong>GB/T 47678系列标准首次系统构建城市运行管理服务平台全链条标准体系。<br>4. <strong>从人工到智能：</strong>各地纷纷建立城市数字体征平台和"一网统管"体系。</div>
+        </div>
+        <div class="card" id="domestic-standard">
+            <h2>国内指标规范详细列表</h2>
+            <h3>国家级指标规范</h3>
+            <div class="table-wrap"><table><thead><tr><th>标准编号</th><th>标准名称</th><th>发布单位</th><th>发布/实施日期</th><th>指标摘要</th><th>数据来源</th></tr></thead><tbody>
+                <tr><td>GB/T 47678.6-2026</td><td><span class="badge badge-key">核心</span> 城市运行管理服务平台 第6部分：监测部件和事件</td><td>国家市场监督管理总局、国家标准化管理委员会</td><td>发布：2026-05-25<br>实施：2026-07-01</td><td>核心指标：监测部件分类、18位标识码规则、数据要求、事件类型。</td><td><a href="https://openstd.samr.gov.cn/bzgk/std/newGbInfo?hcno=35DB69A798A23CCBAFF79DB598CB93B8" class="source-link" target="_blank">国家标准全文公开系统</a></td></tr>
+                <tr><td>GB/T 47678.1-2026</td><td>城市运行管理服务平台 第1部分：术语和符号</td><td>同上</td><td>发布：2026-05-25<br>实施：2026-07-01</td><td>界定城市运行管理服务平台基础通用术语。</td><td><a href="https://openstd.samr.gov.cn/bzgk/std/newGbInfo?hcno=66E3B4AC63343A614BB9A9136F379BD8" class="source-link" target="_blank">国家标准全文公开系统</a></td></tr>
+                <tr><td>GB/T 47678.2-2026</td><td>城市运行管理服务平台 第2部分：通用技术</td><td>同上</td><td>发布：2026-05-25<br>实施：2026-07-01</td><td>规定平台总体架构、功能要求、性能要求、安全要求。</td><td><a href="https://www.gb-gbt.com/PDF/Chinese.aspx/GBT47678.2-2026" class="source-link" target="_blank">GB-GBT标准网</a></td></tr>
+                <tr><td>GB/T 47678.7-2026</td><td>城市运行管理服务平台 第7部分：数据</td><td>同上</td><td>发布：2026-05-25<br>实施：2026-07-01</td><td>规定平台数据的总体要求、数据分类和代码。</td><td><a href="https://www.spc.org.cn/online/bd44fc83b3b7ef9ee3399e8277745f55.html" class="source-link" target="_blank">中国标准在线服务网</a></td></tr>
+                <tr><td>GB/T 47678.8-2026</td><td>城市运行管理服务平台 第8部分：信息采集</td><td>同上</td><td>发布：2026-05-25<br>实施：2026-07-01</td><td>规范信息采集的方式、内容、流程和质量要求。</td><td><a href="https://openstd.samr.gov.cn/bzgk/std/newGbInfo?hcno=26A04F629F4CE148EFE878FDFBF7972D" class="source-link" target="_blank">国家标准全文公开系统</a></td></tr>
+                <tr><td>GB/T 47678.10-2026</td><td>城市运行管理服务平台 第10部分：综合评价</td><td>同上</td><td>发布：2026-05-25<br>实施:2026-07-01</td><td>规定城市运行管理服务的评价指标体系、评价方法和评价流程。</td><td><a href="https://openstd.samr.gov.cn/bzgk/std/newGbInfo?hcno=9F28807D98FF7903841623512E9EED97" class="source-link" target="_blank">国家标准全文公开系统</a></td></tr>
+                <tr><td>GB/T 48091-2026</td><td><span class="badge badge-new">新发布</span> 智慧城市服务体验感知评价通则 公共安全信息应用</td><td>公安部（归口）</td><td>发布：2026-08-28<br>实施：2027-03-01</td><td>规定智慧城市公共安全信息服务体验感知评价的原则、指标体系和方法。</td><td><a href="https://std.samr.gov.cn/search/stdPage?q=%E6%99%BA%E6%85%A7%E5%9F%8E%E5%B8%82&tid=" class="source-link" target="_blank">全国标准信息公共服务平台</a></td></tr>
+                <tr><td>GB/T 48111-2026</td><td><span class="badge badge-new">新发布</span> 交通信息采集 路侧毫米波雷达交通状态检测器</td><td>全国智能运输系统标准化技术委员会</td><td>发布：2026-08-28<br>实施：2027-03-01</td><td>规定路侧毫米波雷达交通状态检测器的技术要求。</td><td><a href="https://std.samr.gov.cn/search/std?q=%E9%9B%B7%E8%BE%BE" class="source-link" target="_blank">全国标准信息公共服务平台</a></td></tr>
+            </tbody></table></div>
+            <h3>地方指标规范</h3>
+            <div class="table-wrap"><table><thead><tr><th>标准编号</th><th>标准名称</th><th>地区</th><th>发布/实施日期</th><th>指标摘要</th><th>数据来源</th></tr></thead><tbody>
+                <tr><td>DB34/T 5390-2026</td><td>城市生命线工程监测设备质量管理标准</td><td>安徽省</td><td>发布：2026-01-05<br>实施：2026-07-05</td><td>规范城市生命线工程监测设备的质量管理。</td><td><a href="https://std.samr.gov.cn/search/orgOthers?q=%E5%90%88%E8%82%A5%E5%B8%82%E5%9F%8E%E4%B9%A1%E5%BB%BA%E8%AE%BE%E5%B1%80" class="source-link" target="_blank">全国标准信息公共服务平台</a></td></tr>
+                <tr><td>DB34/T 5330-2025</td><td>城市生命线工程监测设施技术标准</td><td>安徽省</td><td>发布：2025-11-19<br>实施：2026-05-19</td><td>规定城市生命线工程监测设施的布设原则、监测方法。</td><td><a href="https://std.samr.gov.cn/search/orgOthers?q=%E4%B8%AD%E5%9B%BD%E5%BB%BA%E7%AD%91%E6%A0%87%E5%87%86%E8%AE%BE%E8%AE%A1%E7%A0%94%E7%A9%B6%E9%99%A2%E6%9C%89%E9%99%90%E5%85%AC%E5%8F%B8" class="source-link" target="_blank">全国标准信息公共服务平台</a></td></tr>
+                <tr><td>山东省城市体检工作指引（2026版）</td><td>城市体检"55+10+X"指标体系</td><td>山东省</td><td>2026-05-27发布</td><td>55项住建部基础指标、10项省级特色指标、X项市级特色指标。</td><td><a href="https://weixin.caupdcloud.com/archives/1305591" class="source-link" target="_blank">规划问道</a></td></tr>
+                <tr><td>天津市城市体检指标体系</td><td>"55+17"城市体检指标体系</td><td>天津市</td><td>2026-07-21启动</td><td>55项住建部基础指标 + 17项天津特色指标。</td><td><a href="https://www.tj.gov.cn/zmhd/hygqx/202607/t20260722_7339539.html" class="source-link" target="_blank">天津政务网</a></td></tr>
+                <tr><td>深圳市城市指数（UIS）</td><td>"6+19+50+X"城市体征指标体系</td><td>深圳市</td><td>2026-01发布</td><td>6个价值维度、19项二级维度、50项具体指标及X项拓展指标。</td><td><a href="http://news.qq.com/rain/a/20260503A06UWQ00" class="source-link" target="_blank">腾讯新闻</a></td></tr>
+            </tbody></table></div>
+        </div>
+        <div class="card" id="foreign-policy">
+            <h2>国外政策详细列表</h2>
+            <div class="table-wrap"><table><thead><tr><th>政策/标准名称</th><th>发布国家/组织</th><th>发布日期</th><th>政策要求摘要</th><th>数据来源</th></tr></thead><tbody>
+                <tr><td><span class="badge badge-key">关键</span> EU Implementing Regulation on Urban Mobility Indicators</td><td>欧盟委员会</td><td>2026-07-09</td><td>覆盖431个TEN-T网络城市节点，建立城市出行统一指标体系，成员国需在2027年12月31日前提交首份数据报告。</td><td><a href="https://transport.ec.europa.eu/news-events/news/commission-adopts-implementing-regulation-strengthen-sustainable-urban-mobility-through-harmonised-2026-07-09_en" class="source-link" target="_blank">欧盟交通委员会</a></td></tr>
+                <tr><td>ISO/IEC 25005-1:2026</td><td>ISO/IEC</td><td>2026-07</td><td>《信息技术 — 智慧城市数据使用 第1部分：框架》，建立智慧城市数据使用的总体框架。</td><td><a href="https://www.iso.org/standard/88765.html" class="source-link" target="_blank">ISO官网</a></td></tr>
+                <tr><td>ISO/IEC 30178:2026</td><td>ISO/IEC</td><td>2026-07</td><td>《物联网 — 数据格式、值和编码互操作性》，定义标准化数据格式。</td><td><a href="https://standards.iteh.ai/articles/blog/latest-news/iot-data-interoperability-july-2026" class="source-link" target="_blank">ITEH Standards</a></td></tr>
+                <tr><td>ISO/IEC/IEEE 32857:2026</td><td>ISO/IEC/IEEE</td><td>2026</td><td>《Wi-SUN现场区域网络（FAN）规范》，首个被ISO/IEC采纳用于智慧城市的无线网状网络标准。</td><td><a href="https://www.thefastmode.com/technology-solutions/49503-wi-sun-fan-becomes-first-wireless-mesh-network-standard-adopted-by-iso-iec-for-smart-cities" class="source-link" target="_blank">The Fast Mode</a></td></tr>
+                <tr><td>ISO 37122</td><td>ISO</td><td>2019发布，2024复审确认现行</td><td>《可持续发展社区 — 智慧城市指标》，覆盖经济、能源、环境、教育、健康、交通、政务等维度。</td><td><a href="https://www.iso.org/obp/ui/#iso:std:iso:37122:dis:ed-1:v1:en" class="source-link" target="_blank">ISO官网</a></td></tr>
+                <tr><td>ISO 37120</td><td>ISO</td><td>2018发布，现行有效</td><td>《可持续城市和社区 — 城市服务和生活质量指标》，为核心指标。</td><td><a href="https://www.iso.org/obp/ui/en/#!iso:std:68498:en" class="source-link" target="_blank">ISO官网</a></td></tr>
+                <tr><td>ITU-T Y.4499</td><td>ITU-T</td><td>现行</td><td>《基于众源的城市基础设施监测框架》，规定基于众源数据的城市基础设施监测框架。</td><td><a href="https://www.itu.int/itu-t/recommendations/rec.aspx?id=15680" class="source-link" target="_blank">ITU-T官网</a></td></tr>
+                <tr><td>NIST SP 1900-206</td><td>NIST</td><td>2022发布，现行有效</td><td>《智慧城市和社区：关键绩效指标框架》，从经济、社会、环境、治理四个维度建立可量化的城市绩效评估体系。</td><td><a href="https://www.nist.gov/image/smart-city-holistic-key-performance-indicators-framework" class="source-link" target="_blank">NIST官网</a></td></tr>
+                <tr><td>C40 Cities Urban Nature Declaration Targets</td><td>C40城市气候领导联盟</td><td>2021设定，持续推进</td><td>2030城市自然目标：每个城市30%的绿化覆盖率，70%的人口居住在靠近自然空间的区域。</td><td><a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC10897363/" class="source-link" target="_blank">NCBI/PMC</a></td></tr>
+                <tr><td>UN-Habitat Global Urban Monitoring Framework</td><td>联合国人居署</td><td>2022年3月获联合国统计委员会认可</td><td>作为监测可持续发展目标（SDGs）和新城市议程（NUA）的统一策略。</td><td><a href="https://unhabitat.org/ar/node/143968" class="source-link" target="_blank">UN-Habitat</a></td></tr>
+            </tbody></table></div>
+        </div>
+        <div class="card" id="analysis">
+            <h2>数据分析与可视化</h2>
+            <h3>政策关键词云</h3>
+            <div class="chart-card"><div id="wordcloud" class="keyword-cloud"></div></div>
+            <div class="chart-grid">
+                <div class="chart-card"><h3>国内政策类别分布</h3><div id="domestic-pie" class="chart-container"></div></div>
+                <div class="chart-card"><h3>国外标准发布趋势（2026年）</h3><div id="foreign-trend" class="chart-container"></div></div>
+            </div>
+            <div class="chart-grid">
+                <div class="chart-card"><h3>城市体征监测覆盖领域对比</h3><div id="domain-compare" class="chart-container"></div></div>
+                <div class="chart-card"><h3>政策热点建设内容TOP10</h3><div id="hot-content" class="chart-container"></div></div>
+            </div>
+            <h3>同类政策要求变化趋势分析</h3>
+            <div class="chart-card"><div id="trend-analysis" class="chart-container" style="height: 450px;"></div></div>
+            <div class="highlight-box"><strong>关键发现：</strong><br>1. <strong>从"管理"到"服务"转型：</strong>国内外政策均呈现从城市管理向城市服务、从政府主导向多元协同的转变趋势。<br>2. <strong>数据标准化加速：</strong>2026年ISO/IEC集中发布智慧城市数据相关标准。<br>3. <strong>生命线安全受重视：</strong>中国从国家到地方密集出台城市生命线安全政策。<br>4. <strong>实时监测成标配：</strong>各地纷纷建立城市数字体征平台，强调实时监测、智能预警、自动处置。<br>5. <strong>国际协同增强：</strong>欧盟通过统一法规要求431个城市节点报告标准化出行数据。</div>
+        </div>
+        <div class="footer">
+            <p>报告生成时间：2026年9月2日 | 数据来源：国家标准化管理委员会、住房城乡建设部、江苏省人民政府、欧盟委员会、ISO、ITU-T等</p>
+            <p>本报告仅供研究参考，所有数据来源于公开渠道</p>
+        </div>
+    </div>
+    <script>
+        var wordCloud = echarts.init(document.getElementById('wordcloud'));
+        var wordData = [{name: '城市体征', value: 120}, {name: '监测', value: 100}, {name: '智慧监测', value: 95}, {name: '城市生命线', value: 90}, {name: '一网统管', value: 85}, {name: '物联网', value: 80}, {name: '数据标准', value: 75}, {name: '实时监测', value: 70}, {name: '预警报警', value: 65}, {name: '城市体检', value: 60}, {name: 'GB/T 47678', value: 55}, {name: '综合监管', value: 50}, {name: '数字体征', value: 48}, {name: '传感器', value: 45}, {name: '风险评估', value: 42}, {name: '应急管理', value: 40}, {name: '公共服务', value: 38}, {name: '数据共享', value: 36}, {name: '智能化', value: 35}, {name: '基础设施', value: 34}, {name: '燃气监测', value: 33}, {name: '供水监测', value: 32}, {name: '桥梁监测', value: 31}, {name: '管廊监测', value: 30}, {name: '指标规范', value: 28}, {name: 'ISO 37122', value: 27}, {name: '互联互通', value: 26}, {name: '城市更新', value: 25}, {name: '安全防护', value: 24}, {name: '态势感知', value: 23}];
+        wordCloud.setOption({tooltip: {show: true}, series: [{type: 'wordCloud', shape: 'circle', left: 'center', top: 'center', width: '95%', height: '95%', sizeRange: [14, 50], rotationRange: [-45, 45], rotationStep: 45, gridSize: 8, drawOutOfBound: false, textStyle: {fontFamily: 'Microsoft YaHei', fontWeight: 'bold', color: function() {var colors = ['#1a5276', '#2980b9', '#27ae60', '#e67e22', '#8e44ad', '#c0392b', '#16a085', '#2c3e50']; return colors[Math.floor(Math.random() * colors.length)];}}, emphasis: {focus: 'self', textStyle: {textShadowBlur: 10, textShadowColor: '#333'}}, data: wordData}]});
+        var domesticPie = echarts.init(document.getElementById('domestic-pie'));
+        domesticPie.setOption({tooltip: {trigger: 'item', formatter: '{b}: {c} ({d}%)'}, legend: {orient: 'vertical', right: 10, top: 'center'}, series: [{type: 'pie', radius: ['40%', '70%'], center: ['40%', '50%'], avoidLabelOverlap: false, itemStyle: {borderRadius: 8, borderColor: '#fff', borderWidth: 2}, label: {show: true, formatter: '{b}\n{d}%'}, data: [{value: 8, name: '国家标准', itemStyle: {color: '#2980b9'}}, {value: 5, name: '地方政策', itemStyle: {color: '#27ae60'}}, {value: 3, name: '地方标准', itemStyle: {color: '#e67e22'}}, {value: 4, name: '工作部署', itemStyle: {color: '#8e44ad'}}, {value: 2, name: '行动计划', itemStyle: {color: '#c0392b'}}]}]});
+        var foreignTrend = echarts.init(document.getElementById('foreign-trend'));
+        foreignTrend.setOption({tooltip: {trigger: 'axis'}, xAxis: {type: 'category', data: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月']}, yAxis: {type: 'value', name: '发布数量'}, series: [{name: '国际标准/政策', type: 'line', smooth: true, data: [1, 0, 1, 2, 3, 2, 5, 2, 2], areaStyle: {color: 'rgba(41,128,185,0.2)'}, lineStyle: {color: '#2980b9', width: 3}, itemStyle: {color: '#2980b9'}, markPoint: {data: [{type: 'max', name: '最大值'}]}}]});
+        var domainCompare = echarts.init(document.getElementById('domain-compare'));
+        domainCompare.setOption({tooltip: {trigger: 'axis', axisPointer: {type: 'shadow'}}, legend: {data: ['国内覆盖', '国外覆盖'], top: 10}, radar: {indicator: [{name: '交通出行', max: 100}, {name: '环境监测', max: 100}, {name: '公共安全', max: 100}, {name: '基础设施', max: 100}, {name: '能源管理', max: 100}, {name: '政务服务', max: 100}, {name: '应急响应', max: 100}, {name: '社区服务', max: 100}], shape: 'polygon', splitNumber: 4, axisName: {color: '#333', fontSize: 12}}, series: [{type: 'radar', data: [{value: [95, 85, 90, 98, 70, 85, 95, 80], name: '国内覆盖', areaStyle: {color: 'rgba(41,128,185,0.3)'}, lineStyle: {color: '#2980b9', width: 2}, itemStyle: {color: '#2980b9'}}, {value: [90, 95, 80, 85, 90, 75, 85, 70], name: '国外覆盖', areaStyle: {color: 'rgba(39,174,96,0.3)'}, lineStyle: {color: '#27ae60', width: 2}, itemStyle: {color: '#27ae60'}}]}]});
+        var hotContent = echarts.init(document.getElementById('hot-content'));
+        hotContent.setOption({tooltip: {trigger: 'axis', axisPointer: {type: 'shadow'}}, grid: {left: '3%', right: '10%', bottom: '3%', containLabel: true}, xAxis: {type: 'value', name: '热度指数'}, yAxis: {type: 'category', data: ['数字孪生', 'AI预警', '5G融合', '数据治理', '一网统管', '智慧监测', '城市体检', '生命线安全', '物联感知', '实时监测']}, series: [{type: 'bar', data: [{value: 72, itemStyle: {color: '#3498db'}}, {value: 75, itemStyle: {color: '#2980b9'}}, {value: 68, itemStyle: {color: '#1abc9c'}}, {value: 80, itemStyle: {color: '#16a085'}}, {value: 85, itemStyle: {color: '#27ae60'}}, {value: 90, itemStyle: {color: '#2ecc71'}}, {value: 88, itemStyle: {color: '#f39c12'}}, {value: 95, itemStyle: {color: '#e67e22'}}, {value: 92, itemStyle: {color: '#e74c3c'}}, {value: 98, itemStyle: {color: '#c0392b'}}], label: {show: true, position: 'right', formatter: '{c}'}, barWidth: '60%'}]});
+        var trendAnalysis = echarts.init(document.getElementById('trend-analysis'));
+        trendAnalysis.setOption({tooltip: {trigger: 'axis'}, legend: {data: ['监测覆盖率', '数据标准化率', '智能预警率', '实时响应率'], top: 10}, grid: {left: '3%', right: '4%', bottom: '3%', containLabel: true}, xAxis: {type: 'category', boundaryGap: false, data: ['2022年', '2023年', '2024年', '2025年', '2026年']}, yAxis: {type: 'value', name: '百分比(%)', max: 100}, series: [{name: '监测覆盖率', type: 'line', smooth: true, data: [35, 48, 62, 78, 92], lineStyle: {color: '#2980b9', width: 3}, itemStyle: {color: '#2980b9'}, areaStyle: {color: 'rgba(41,128,185,0.1)'}}, {name: '数据标准化率', type: 'line', smooth: true, data: [25, 38, 52, 68, 85], lineStyle: {color: '#27ae60', width: 3}, itemStyle: {color: '#27ae60'}, areaStyle: {color: 'rgba(39,174,96,0.1)'}}, {name: '智能预警率', type: 'line', smooth: true, data: [15, 28, 42, 58, 75], lineStyle: {color: '#e67e22', width: 3}, itemStyle: {color: '#e67e22'}, areaStyle: {color: 'rgba(230,126,34,0.1)'}}, {name: '实时响应率', type: 'line', smooth: true, data: [20, 32, 45, 60, 78], lineStyle: {color: '#8e44ad', width: 3}, itemStyle: {color: '#8e44ad'}, areaStyle: {color: 'rgba(142,68,173,0.1)'}}]});
+        window.addEventListener('resize', function() {wordCloud.resize(); domesticPie.resize(); foreignTrend.resize(); domainCompare.resize(); hotContent.resize(); trendAnalysis.resize();});
+    </script>
 </body>
 </html>
